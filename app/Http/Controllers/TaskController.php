@@ -11,33 +11,36 @@ class TaskController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
     public function index()
     {
         //
-        $allTasks = Task::orderBy('id', 'DESC')->get();
-        return $allTasks;
+        $allTasks = Task::with('user')->orderBy('id', 'DESC')->get();
+
+        return response()->json($allTasks,200,[],JSON_PRETTY_PRINT);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
     public function store(Request $request)
     {
         //
 //        $task = new Task;
 //        $task->title = $request->title;
+        $user = auth()->guard('api')->user();
 
         $newTask = Task::create([
+            'user_id' => $user->id,
             'title' => $request->title,
             'description' => $request->description,
 
         ]);
-        return $newTask;
+        return response()->json($newTask,200,[],JSON_PRETTY_PRINT);
 
 //        $userInputData = $request->all();
 //
@@ -49,13 +52,13 @@ class TaskController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
     public function show($id)
     {
         //
         $task = Task::where('id', $id)->first();
-        return $task;
+        return response()->json($task,200,[],JSON_PRETTY_PRINT);
     }
 
     /**
@@ -80,14 +83,14 @@ class TaskController extends Controller
             'title'=>     $request->title,
             'description'=>$request->description
         ]);
-        return response()->json(['data' => $findTask],200,[],JSON_PRETTY_PRINT);;
+        return response()->json($findTask,200,[],JSON_PRETTY_PRINT);
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
     public function destroy($id)
     {
@@ -95,6 +98,6 @@ class TaskController extends Controller
         if (Task::where('id',$id)->first()) { // 게시글이 있을 때만
             $findTask = Task::where('id', $id)->delete();
         }
-        return $findTask;
+        return response()->json($findTask,200,[],JSON_PRETTY_PRINT);
     }
 }
