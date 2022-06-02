@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Auth;
 //use DB;
 class TaskController extends Controller
 {
@@ -27,25 +28,15 @@ class TaskController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse|Response
      */
-    public function store(Request $request)
-    {
-        //
-//        $task = new Task;
-//        $task->title = $request->title;
-        $user = auth()->guard('api')->user();
-
+    public function store(Request $request) {
+       $user = Auth::user()->id;
         $newTask = Task::create([
-            'user_id' => $user->id,
+            'user_id' => $user,
             'title' => $request->title,
             'description' => $request->description,
 
         ]);
         return response()->json($newTask,200,[],JSON_PRETTY_PRINT);
-
-//        $userInputData = $request->all();
-//
-//        $newTask = Task::create($userInputData);
-//        return $newTask;
     }
 
     /**
