@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use http\Client\Curl\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\Client;
 use Symfony\Component\HttpFoundation\Response;
-
+use App\Models\User;
 class AuthController extends Controller
 {
     // 회원가입
@@ -38,32 +37,26 @@ class AuthController extends Controller
 
         $token = $this->createToken($data['email'], $data['password']);
 
+        return response([
+           'token' => $token,
+           'message' => 'success'
+        ], 201);
         return $token;
     }
 
-    public function createToken ($userId, $password): string|Response {
-        $credentials = array(
-            'email' => $userId,
-            'password' => $password
-        );
-
-        $data = [
-            'grant_type' => 'password',
-            'client_id' => '2',
-            'client_secret' => config('services.passport.secret'),
-            'username' => $userId,
-            'password' => $password,
-            'scope' => '*',
-        ];
-        $request = Request::create('/oauth/token', 'POST', $data);
-        return app()->handle($request);
-    }
 
     public function login(Request $request) {
-        $request->validate([
-            'user_id' => 'required|string',
-            'password' => 'required|string',
-        ]);
-        return $this->createToken($request->user_id, $request->password);
+        $user = User::where('email',$request->user_id)->first();
+        $token = $user->createToken('access-token');
+        return response([
+            'token' => $token,
+            'user' => $user,
+            'message' => 'login success'
+        ], 200);
+    }
+
+    public function user(Request $request)
+    {
+        return response()->json($request->user());
     }
 }
