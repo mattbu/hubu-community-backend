@@ -23,7 +23,10 @@ use Illuminate\Support\Facades\Route;
 
 //Route::get('/v1/boards', [PostController::class, 'index']);
 //Route::resource('/v1/boards', PostController::class);
-Route::apiResource('/v1/boards', TaskController::class);
+
+Route::middleware('auth:api')->group(function () {
+    Route::apiResource('/v1/boards', TaskController::class);
+});
 
 Route::prefix('/v1/auth')->group(function() {
     Route::post('/login', [AuthController::class, 'login']);
