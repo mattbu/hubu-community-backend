@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:api')->group(function () {
     Route::apiResource('/v1/boards', TaskController::class);
+    Route::get('/v1/user_information', [AuthController::class, 'getUserInfo']);
 });
 
 Route::prefix('/v1/auth')->group(function() {

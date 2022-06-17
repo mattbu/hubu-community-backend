@@ -12,6 +12,22 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
 class AuthController extends Controller
 {
+    // 유저 정보 조회
+    public function getUserInfo() {
+
+        $user = Auth::user();
+        if (Auth::check() && $user) {
+            return response()->json([
+                'data' => $user,
+                'message' => '유저 정보 조회를 성공했습니다.'
+            ], 200);// The user is logged in...
+        } else {
+            return response()->json([
+                'status' => 'Unauthorized',
+                'message' => '로그인이 필요합니다.'
+            ], 403);
+        }
+    }
     // 회원가입
     public function register(Request $request) {
 
@@ -35,7 +51,7 @@ class AuthController extends Controller
             $filename = $request->file('avatar_img')->getClientOriginalName();
             $image_path = Storage::url($avatar_img);
         }
-        
+
         // 사용자 생성
         $user = User::create([
            'name' => $data['name'],
