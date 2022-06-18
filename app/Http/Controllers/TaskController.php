@@ -74,8 +74,8 @@ class TaskController extends Controller
 
         if ($userId === $writtenUserId) {
             $findTask = Task::where('id', $id)->update([
-                'title'=>     $request->title,
-                'description'=>$request->description
+                'title' => $request->title,
+                'description' => $request->description
             ]);
             return response()->json($findTask,200,[],JSON_PRETTY_PRINT);    
         } else {

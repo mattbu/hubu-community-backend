@@ -14,19 +14,40 @@ class AuthController extends Controller
 {
     // 유저 정보 조회
     public function getUserInfo() {
-
         $user = Auth::user();
         if (Auth::check() && $user) {
             return response()->json([
                 'data' => $user,
                 'message' => '유저 정보 조회를 성공했습니다.'
-            ], 200);// The user is logged in...
+            ], 200);
         } else {
             return response()->json([
                 'status' => 'Unauthorized',
                 'message' => '로그인이 필요합니다.'
             ], 403);
         }
+    }
+    // 유저 정보 변경
+    public function updateUserInfo(Request $request) {
+        
+        $user = User::find(Auth::user()-> id);
+        
+        if ($request->file('avatar_img')) {
+            $avatar_img = $request->file('avatar_img')->store('public/images');
+            $image_path = Storage::url($avatar_img);
+        } else {
+            $image_path = $user->avatar_img;
+        }
+     
+        $updatedUser = $user->update([
+            'name' => $request->name,
+            'avatar_img' => $image_path
+        ]);
+  
+        return response()->json([
+            'data' => $user,
+            'message' => '유저 정보를 수정 하였습니다.'
+        ], 200);
     }
     // 회원가입
     public function register(Request $request) {
