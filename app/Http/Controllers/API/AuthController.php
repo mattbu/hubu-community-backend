@@ -29,19 +29,34 @@ class AuthController extends Controller
     }
     // 유저 정보 변경
     public function updateUserInfo(Request $request) {
-        
+        // 유저
         $user = User::find(Auth::user()-> id);
-        
+
+        // 이미지
         if ($request->file('avatar_img')) {
             $avatar_img = $request->file('avatar_img')->store('public/images');
             $image_path = Storage::url($avatar_img);
         } else {
             $image_path = $user->avatar_img;
         }
-     
+
+        // 비밀번호 
+        $validate = $request -> validate([
+            'password' => 'string|min:0|max:16|',
+        ]);
+
+        $is_same = Hash::check($validate['password'], Auth::user()->password);
+
+        if ($is_same) {
+            return response()->json(['message' => '이전 비밀번호는 사용할 수 없습니다.'], 500);
+        }
+
+        $new_password = Hash::make($validate['password']);
+
         $updatedUser = $user->update([
             'name' => $request->name,
-            'avatar_img' => $image_path
+            'avatar_img' => $image_path,
+            'password' => $new_password
         ]);
   
         return response()->json([

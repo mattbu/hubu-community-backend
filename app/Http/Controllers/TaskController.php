@@ -49,6 +49,7 @@ class TaskController extends Controller
     {
         //
         $task = Task::where('id', $id)->with('user')->first();
+        // dd($task->toArray());
         return response()->json($task,200,[],JSON_PRETTY_PRINT);
     }
 
@@ -77,7 +78,7 @@ class TaskController extends Controller
                 'title' => $request->title,
                 'description' => $request->description
             ]);
-            return response()->json($findTask,200,[],JSON_PRETTY_PRINT);    
+            return response()->json($findTask,200,[],JSON_PRETTY_PRINT);
         } else {
             return response()->json([
                 'message' => '수정 권한이 없습니다.'
