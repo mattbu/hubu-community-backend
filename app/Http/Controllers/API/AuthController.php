@@ -125,4 +125,11 @@ class AuthController extends Controller
             'message' => 'login success'
         ], 200);
     }
+
+    public function logout(Request $request) {
+        Auth::guard('api')->user()->tokens()->first()->revoke();
+        return response()->json([
+            'message' => '로그아웃 되었습니다.'
+        ]);
+    }
 }

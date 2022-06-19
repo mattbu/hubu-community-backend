@@ -32,6 +32,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/v1/comments/{task_id}', [CommentController::class, 'index']);
     Route::post('/v1/comments/{task_id}', [CommentController::class, 'store']);
     Route::post('/v1/comments/{id}/reply', [CommentController::class, 'createReply']);
+    Route::delete('/v1/logout', [AuthController::class, 'logout']);
 });
 
 Route::prefix('/v1/auth')->group(function() {
