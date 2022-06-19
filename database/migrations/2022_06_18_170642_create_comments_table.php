@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('task_id');
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->string('comment');
+            $table->integer('depth');
             $table->timestamps();
         });
     }

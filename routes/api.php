@@ -31,6 +31,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/v1/user_information', [AuthController::class, 'updateUserInfo']);
     Route::get('/v1/comments/{task_id}', [CommentController::class, 'index']);
     Route::post('/v1/comments/{task_id}', [CommentController::class, 'store']);
+    Route::post('/v1/comments/{id}/reply', [CommentController::class, 'createReply']);
 });
 
 Route::prefix('/v1/auth')->group(function() {

@@ -48,7 +48,7 @@ class TaskController extends Controller
     public function show($id)
     {
         //
-        $task = Task::where('id', $id)->with('user')->first();
+        $task = Task::where('id', $id)->with('user', 'comments.replies')->first();
         // dd($task->toArray());
         return response()->json($task,200,[],JSON_PRETTY_PRINT);
     }

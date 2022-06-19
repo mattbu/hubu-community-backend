@@ -15,7 +15,7 @@ class CommentController extends Controller
     public function index(Request $request, $task_id)
     {
         //
-        $comments = Comment::where('task_id', $task_id)->with('user')->orderBy('id', 'DESC')->get();
+        $comments = Comment::where('task_id', $task_id)->Where('depth', 0)->with('user', 'replies.user')->orderBy('id', 'DESC')->get();
 
         return response()->json($comments, 200);
     }
@@ -41,7 +41,7 @@ class CommentController extends Controller
             'user_id' => $request->user_id,
             'task_id' => $task_id,
             'comment' => $request->comment,
-            // 'level' => 0,
+            'depth' => 0,
         ]);
         return response()->json([
             'data' => $createdComment,
@@ -92,5 +92,22 @@ class CommentController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function createReply(Request $request, $id) {
+        $task_id = Comment::find($id)->task_id;
+
+        $newReply = Comment::create([
+            'user_id' => $request->user_id,
+            'task_id' => $task_id,
+            'comment' => $request->comment,
+            'depth' => 1,
+            'parent_id' => $id
+        ]);
+
+        return response()->json([
+            'data' => $newReply,
+            'message' => '답글이 등록되었습니다.'
+        ], 200);
     }
 }
