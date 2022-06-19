@@ -40,25 +40,29 @@ class AuthController extends Controller
             $image_path = $user->avatar_img;
         }
 
-        // 비밀번호 
-        $validate = $request -> validate([
-            'password' => 'string|min:0|max:16|',
-        ]);
+        // 비밀번호
+        if ($request->password) {
+            $validate = $request -> validate([
+                'password' => 'string|min:0|max:16|',
+            ]);
 
-        $is_same = Hash::check($validate['password'], Auth::user()->password);
+            $is_same = Hash::check($validate['password'], Auth::user()->password);
 
-        if ($is_same) {
-            return response()->json(['message' => '이전 비밀번호는 사용할 수 없습니다.'], 500);
+            if ($is_same) {
+                return response()->json(['message' => '이전 비밀번호는 사용할 수 없습니다.'], 500);
+            }
+
+            $new_password = Hash::make($validate['password']);
         }
 
-        $new_password = Hash::make($validate['password']);
+        $existing_password = $user->password;
 
-        $updatedUser = $user->update([
+        $user->update([
             'name' => $request->name,
             'avatar_img' => $image_path,
-            'password' => $new_password
+            'password' => $new_password ?? $existing_password
         ]);
-  
+
         return response()->json([
             'data' => $user,
             'message' => '유저 정보를 수정 하였습니다.'
