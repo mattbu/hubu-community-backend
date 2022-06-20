@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Passport\Client;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
@@ -52,9 +53,24 @@ class AuthController extends Controller
 
         // 비밀번호
         if ($request->password) {
-            $validate = $request -> validate([
-                'password' => 'string|min:0|max:16|',
+
+            $password_length = Str::length($request->password);
+            if ($password_length > 6) {
+                return response()->json([
+                    'message' => '비밀번호는 6자리 이하로 입력해 주세요.'
+                ], 500);
+            }
+
+            $validate = $request->validate([
+                'password' => 'string|min:0|max:6|',
             ]);
+//
+//            $check_length = Str::length($validate['password']);
+//            if ($check_length > 6) {
+//                return response()->json([
+//                    'message' => '비밀번호는 6자리 이하로 입력해 주세요.'
+//                ], 500);
+//            }
 
             $is_same = Hash::check($validate['password'], Auth::user()->password);
 
@@ -81,6 +97,13 @@ class AuthController extends Controller
     // 회원가입
     public function register(Request $request) {
 
+        $password_length = Str::length($request->password);
+        if ($password_length > 6) {
+            return response()->json([
+                'message' => '비밀번호는 6자리 이하로 입력해 주세요.'
+            ], 500);
+        }
+
         $valid = validator($request->only('email', 'name', 'password'), [
            'email' => 'required|string|max:255|unique:users',
            'name' => 'required|string|max:255',
@@ -90,7 +113,7 @@ class AuthController extends Controller
         // 필수 입력 값들에 대한 유효성 검사
         if ($valid->fails()) {
             return response()->json([
-                'error' => $valid->errors()->all()
+                'message' => '아이디, 이름, 비밀번호를 입력해 주세요.'
             ], 500);
         }
 
