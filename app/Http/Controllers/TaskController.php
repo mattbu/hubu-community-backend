@@ -30,13 +30,27 @@ class TaskController extends Controller
      */
     public function store(Request $request) {
         $user = Auth::user()->id;
-        $newTask = Task::create([
-            'user_id' => $user,
-            'title' => $request->title,
-            'description' => $request->description,
 
+        $valid = validator($request->only('title', 'description'), [
+            'title' => 'string',
+            'description' => 'string',
         ]);
-        return response()->json($newTask,200,[],JSON_PRETTY_PRINT);
+
+        if ($valid->fails()) {
+            return response()->json([
+                'message' => '제목과 내용을 입력해 주세요.'
+            ], 500);
+        } else {
+            $newTask = Task::create([
+                'user_id' => $user,
+                'title' => $request->title,
+                'description' => $request->description,
+            ]);
+            return response()->json([
+                'message' => '등록이 완료 되었습니다.',
+                'data' => $newTask
+            ], 200);
+        }
     }
 
     /**
@@ -73,16 +87,30 @@ class TaskController extends Controller
         $userId = Auth::user()->id;
         $writtenUserId = Task::where('id', $id)->with('user')->first()->user_id;
 
+        $valid = validator($request->only('title', 'description'), [
+            'title' => 'string',
+            'description' => 'string',
+        ]);
+
+        if ($valid->fails()) {
+            return response()->json([
+                'message' => '제목과 내용을 입력해 주세요.'
+            ], 500);
+        }
+
         if ($userId === $writtenUserId) {
             $findTask = Task::where('id', $id)->update([
                 'title' => $request->title,
                 'description' => $request->description
             ]);
-            return response()->json($findTask,200,[],JSON_PRETTY_PRINT);
+            return response()->json([
+                'data' => $findTask,
+                'message' => '수정이 완료 되었습니다.'
+            ], 200);
         } else {
             return response()->json([
                 'message' => '수정 권한이 없습니다.'
-            ], Response::HTTP_BAD_REQUEST);
+            ], 500);
         };
     }
 
@@ -102,11 +130,11 @@ class TaskController extends Controller
             $findTask = Task::where('id', $id)->delete();
             return response()->json([
                 'message' => '삭제가 완료 되었습니다.'
-            ], 200, [], JSON_PRETTY_PRINT);
+            ], 200);
         } else {
             return response()->json([
-                'message' => '수정 권한 혹은 게시글이 없습니다.'
-            ], Response::HTTP_BAD_REQUEST);
+                'message' => '삭제 권한 혹은 게시글이 없습니다.'
+            ], 500);
         }
     }
 }

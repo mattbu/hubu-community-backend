@@ -32,6 +32,16 @@ class AuthController extends Controller
         // 유저
         $user = User::find(Auth::user()-> id);
 
+        $valid = validator($request->only('name'), [
+            'name' => 'string',
+        ]);
+
+        if ($valid->fails()) {
+            return response()->json([
+                'message' => '이름은 필수 입력 사항입니다.'
+            ], 500);
+        }
+
         // 이미지
         if ($request->file('avatar_img')) {
             $avatar_img = $request->file('avatar_img')->store('public/images');
@@ -72,7 +82,7 @@ class AuthController extends Controller
     public function register(Request $request) {
 
         $valid = validator($request->only('email', 'name', 'password'), [
-           'email' => 'required|string|email|max:255|unique:users',
+           'email' => 'required|string|max:255|unique:users',
            'name' => 'required|string|max:255',
            'password' => 'required|string|max:6',
         ]);
@@ -81,15 +91,17 @@ class AuthController extends Controller
         if ($valid->fails()) {
             return response()->json([
                 'error' => $valid->errors()->all()
-            ], Response::HTTP_BAD_REQUEST);
+            ], 500);
         }
 
         $data = request()->only('email', 'name', 'password', 'avatar_img');
 
-        if ($request->file('avatar_img')->isValid()) {
+        if ($request->file('avatar_img')) {
             $avatar_img = $request->file('avatar_img')->store('public/images');
             $filename = $request->file('avatar_img')->getClientOriginalName();
             $image_path = Storage::url($avatar_img);
+        } else {
+            $image_path = null;
         }
 
         // 사용자 생성
@@ -122,7 +134,7 @@ class AuthController extends Controller
         return response([
             'token' => $token,
             'user' => $user,
-            'message' => 'login success'
+            'message' => '로그인 되었습니다.'
         ], 200);
     }
 

@@ -37,6 +37,17 @@ class CommentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request, $task_id){
+
+        $valid = validator($request->only('comment'), [
+            'comment' => 'string',
+        ]);
+
+        if ($valid->fails()) {
+            return response()->json([
+                'message' => '댓글을 입력해 주세요.'
+            ], 500);
+        }
+
         $createdComment = Comment::create([
             'user_id' => $request->user_id,
             'task_id' => $task_id,
@@ -95,6 +106,17 @@ class CommentController extends Controller
     }
 
     public function createReply(Request $request, $id) {
+
+        $valid = validator($request->only('comment'), [
+            'comment' => 'string',
+        ]);
+
+        if ($valid->fails()) {
+            return response()->json([
+                'message' => '답글을 입력해 주세요.'
+            ], 500);
+        }
+
         $task_id = Comment::find($id)->task_id;
 
         $newReply = Comment::create([
