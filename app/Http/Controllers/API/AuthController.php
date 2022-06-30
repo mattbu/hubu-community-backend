@@ -152,7 +152,7 @@ class AuthController extends Controller
            'name' => $data['name'],
            'email' => $data['email'],
            'password' => bcrypt($data['password']),
-           'avatar_img' => env("AWS_URL").$file_path
+           'avatar_img' => $file_path ? env("AWS_URL").$file_path : ""
         ]);
 
         $token = $user->createToken('access-token');
