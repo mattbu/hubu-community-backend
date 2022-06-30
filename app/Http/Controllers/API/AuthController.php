@@ -43,12 +43,22 @@ class AuthController extends Controller
             ], 500);
         }
 
+        // 이미지 로컬
+//        if ($request->file('avatar_img')) {
+//            $avatar_img = $request->file('avatar_img')->store('public/images');
+//            $image_path = Storage::url($avatar_img);
+//        } else {
+//            $image_path = $user->avatar_img;
+//        }
+
         // 이미지
-        if ($request->file('avatar_img')) {
-            $avatar_img = $request->file('avatar_img')->store('public/images');
-            $image_path = Storage::url($avatar_img);
+        if ($request->hasFile('avatar_img')) {
+            $avatar_file = $request->file('avatar_img');
+            $file_name = time().$avatar_file->getClientOriginalName();
+            $file_path = 'user_avatar/'.$file_name;
+            Storage::disk('s3')->put($file_path, file_get_contents($avatar_file));
         } else {
-            $image_path = $user->avatar_img;
+            $file_path = null;
         }
 
         // 비밀번호
@@ -85,7 +95,7 @@ class AuthController extends Controller
 
         $user->update([
             'name' => $request->name,
-            'avatar_img' => $image_path,
+            'avatar_img' => env("AWS_URL").$file_path,
             'password' => $new_password ?? $existing_password
         ]);
 
@@ -119,12 +129,22 @@ class AuthController extends Controller
 
         $data = request()->only('email', 'name', 'password', 'avatar_img');
 
-        if ($request->file('avatar_img')) {
-            $avatar_img = $request->file('avatar_img')->store('public/images');
-            $filename = $request->file('avatar_img')->getClientOriginalName();
-            $image_path = Storage::url($avatar_img);
+        // 로컬
+//        if ($request->file('avatar_img')) {
+//            $avatar_img = $request->file('avatar_img')->store('public/images');
+//            $filename = $request->file('avatar_img')->getClientOriginalName();
+//            $image_path = Storage::url($avatar_img);
+//        } else {
+//            $image_path = null;
+//        }
+
+        if ($request->hasFile('avatar_img')) {
+            $avatar_file = $request->file('avatar_img');
+            $file_name = time().$avatar_file->getClientOriginalName();
+            $file_path = 'user_avatar/'.$file_name;
+            Storage::disk('s3')->put($file_path, file_get_contents($avatar_file));
         } else {
-            $image_path = null;
+            $file_path = null;
         }
 
         // 사용자 생성
@@ -132,7 +152,7 @@ class AuthController extends Controller
            'name' => $data['name'],
            'email' => $data['email'],
            'password' => bcrypt($data['password']),
-           'avatar_img' => $image_path
+           'avatar_img' => env("AWS_URL").$file_path
         ]);
 
         $token = $user->createToken('access-token');
