@@ -158,7 +158,7 @@ class AuthController extends Controller
         $token = $user->createToken('access-token');
         return response([
            'token' => $token->accessToken,
-           'message' => 'success'
+           'message' => '회원가입을 축하드립니다.'
         ], 201);
     }
 
