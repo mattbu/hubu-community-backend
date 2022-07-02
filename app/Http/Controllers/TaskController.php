@@ -17,7 +17,7 @@ class TaskController extends Controller
     public function index()
     {
         //
-        $allTasks = Task::with('user')->orderBy('id', 'DESC')->get();
+        $allTasks = Task::with('user')->with('comments')->orderBy('id', 'DESC')->get();
 
         return response()->json($allTasks,200,[],JSON_PRETTY_PRINT);
     }
