@@ -126,7 +126,7 @@ class TaskController extends Controller
         $userId = Auth::user()->id;
         $writtenUserId = Task::where('id', $id)->with('user')->first()->user_id;
 
-        if ($userId === $writtenUserId && Task::where('id',$id)->first()) { // 게시글이 있을 때만
+        if ($userId === $writtenUserId && Task::where('id', $id)->first()) { // 게시글이 있을 때만
             $findTask = Task::where('id', $id)->delete();
             return response()->json([
                 'message' => '삭제가 완료 되었습니다.'

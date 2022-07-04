@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
 class AuthController extends Controller
 {
+
     // 유저 정보 조회
     public function getUserInfo() {
         $user = Auth::user();
@@ -28,6 +29,8 @@ class AuthController extends Controller
             ], 403);
         }
     }
+
+
     // 유저 정보 변경
     public function updateUserInfo(Request $request) {
         // 유저
@@ -43,14 +46,6 @@ class AuthController extends Controller
             ], 500);
         }
 
-        // 이미지 로컬
-//        if ($request->file('avatar_img')) {
-//            $avatar_img = $request->file('avatar_img')->store('public/images');
-//            $image_path = Storage::url($avatar_img);
-//        } else {
-//            $image_path = $user->avatar_img;
-//        }
-
         // 이미지
         if ($request->hasFile('avatar_img')) {
             $avatar_file = $request->file('avatar_img');
@@ -58,29 +53,22 @@ class AuthController extends Controller
             $file_path = 'user_avatar/'.$file_name;
             Storage::disk('s3')->put($file_path, file_get_contents($avatar_file));
         } else {
-            $file_path = null;
+            $file_path = $user->avatar_img;
         }
 
         // 비밀번호
         if ($request->password) {
 
             $password_length = Str::length($request->password);
-            if ($password_length > 6) {
+            if ($password_length < 6) {
                 return response()->json([
-                    'message' => '비밀번호는 6자리 이하로 입력해 주세요.'
+                    'message' => '비밀번호는 6자리 이상 입력해 주세요.'
                 ], 500);
             }
 
             $validate = $request->validate([
-                'password' => 'string|min:0|max:6|',
+                'password' => 'string|min:6',
             ]);
-//
-//            $check_length = Str::length($validate['password']);
-//            if ($check_length > 6) {
-//                return response()->json([
-//                    'message' => '비밀번호는 6자리 이하로 입력해 주세요.'
-//                ], 500);
-//            }
 
             $is_same = Hash::check($validate['password'], Auth::user()->password);
 
@@ -95,29 +83,34 @@ class AuthController extends Controller
 
         $user->update([
             'name' => $request->name,
-            'avatar_img' => env("AWS_URL").$file_path,
+            'avatar_img' => $request->hasFile('avatar_img') ? env("AWS_URL").$file_path : $user->avatar_img,
             'password' => $new_password ?? $existing_password
         ]);
 
+        $updated_user = $user->only('id', 'email', 'name', 'avatar_img');
+
         return response()->json([
-            'data' => $user,
+            'data' => $updated_user,
             'message' => '유저 정보를 수정 하였습니다.'
         ], 200);
     }
+
+
     // 회원가입
     public function register(Request $request) {
 
         $password_length = Str::length($request->password);
-        if ($password_length > 6) {
+
+        if ($password_length < 6) {
             return response()->json([
-                'message' => '비밀번호는 6자리 이하로 입력해 주세요.'
+                'message' => '비밀번호는 6자리 이상 입력해 주세요.'
             ], 500);
         }
 
         $valid = validator($request->only('email', 'name', 'password'), [
            'email' => 'required|string|max:255|unique:users',
            'name' => 'required|string|max:255',
-           'password' => 'required|string|max:6',
+           'password' => 'required|string|min:6',
         ]);
 
         // 필수 입력 값들에 대한 유효성 검사
@@ -129,20 +122,18 @@ class AuthController extends Controller
 
         $data = request()->only('email', 'name', 'password', 'avatar_img');
 
-        // 로컬
-//        if ($request->file('avatar_img')) {
-//            $avatar_img = $request->file('avatar_img')->store('public/images');
-//            $filename = $request->file('avatar_img')->getClientOriginalName();
-//            $image_path = Storage::url($avatar_img);
-//        } else {
-//            $image_path = null;
-//        }
-
         if ($request->hasFile('avatar_img')) {
             $avatar_file = $request->file('avatar_img');
-            $file_name = time().$avatar_file->getClientOriginalName();
-            $file_path = 'user_avatar/'.$file_name;
-            Storage::disk('s3')->put($file_path, file_get_contents($avatar_file));
+
+            if ($avatar_file->getSize() > 2097152) {
+                return response([
+                    'message' => '2MB 이하의 사진만 등록 가능합니다.'
+                 ], 500);
+            } else {
+                $file_name = time().$avatar_file->getClientOriginalName();
+                $file_path = 'user_avatar/'.$file_name;
+                Storage::disk('s3')->put($file_path, file_get_contents($avatar_file));
+            }
         } else {
             $file_path = null;
         }
@@ -174,12 +165,15 @@ class AuthController extends Controller
         );
 
         $token = $user->createToken('access-token');
+        $logged_in_user = $user->only('id', 'name', 'email', 'avatar_img');
+
         return response([
             'token' => $token,
-            'user' => $user,
+            'user' => $logged_in_user,
             'message' => '로그인 되었습니다.'
         ], 200);
     }
+
 
     public function logout(Request $request) {
         Auth::guard('api')->user()->tokens()->first()->revoke();
