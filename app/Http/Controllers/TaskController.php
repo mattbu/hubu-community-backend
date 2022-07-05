@@ -6,7 +6,7 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Auth;
-//use DB;
+
 class TaskController extends Controller
 {
     /**
@@ -17,9 +17,11 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         if ($request->order_by) {
-            $allTasks = Task::with('user')->with('comments')->orderBy('created_at', $request->order_by)->paginate(4);
+            $allTasks = Task::with('user')->with('comments')
+                ->orderBy('created_at', $request->order_by)->orderBy('id', 'desc')->paginate(3);
         } else {
-            $allTasks = Task::with('user')->with('comments')->orderBy('created_at', "DESC")->paginate(4);
+            $allTasks = Task::with('user')->with('comments')
+                ->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(3);
         }
 
         return response()->json($allTasks);
