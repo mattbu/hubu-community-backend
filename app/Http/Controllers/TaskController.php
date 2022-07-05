@@ -14,12 +14,15 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse|Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-        $allTasks = Task::with('user')->with('comments')->orderBy('id', 'DESC')->get();
+        if ($request->order_by) {
+            $allTasks = Task::with('user')->with('comments')->orderBy('created_at', $request->order_by)->paginate(4);
+        } else {
+            $allTasks = Task::with('user')->with('comments')->orderBy('created_at', "DESC")->paginate(4);
+        }
 
-        return response()->json($allTasks,200,[],JSON_PRETTY_PRINT);
+        return response()->json($allTasks);
     }
 
     /**
