@@ -134,7 +134,7 @@ class TaskController extends Controller
         } else {
             return response()->json([
                 'message' => '삭제 권한 혹은 게시글이 없습니다.'
-            ], 500);
+            ], 422);
         }
     }
 }

@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
     public function index(Request $request, $task_id)
     {
@@ -34,7 +36,7 @@ class CommentController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
     public function store(Request $request, $task_id){
 
@@ -98,11 +100,23 @@ class CommentController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
-    public function destroy($id)
+    public function deleteComment($id)
     {
-        //
+        $userId = Auth::user()->id;
+        $commentedUserId = Comment::where('user_id', $userId)->with('user')->first()->user_id;
+        if ($userId === $commentedUserId && Comment::where('id', $id)->first()) {
+            Comment::where('id', $id)->delete();
+            $message = '댓글 삭제가 완료 되었습니다.';
+            $statusCode = 200;
+        } else {
+            $message = '삭제 권한 혹은 게시글이 없습니다.';
+            $statusCode = 422;
+        }
+        return response()->json([
+            'message' => $message
+        ], $statusCode);
     }
 
     public function createReply(Request $request, $id) {

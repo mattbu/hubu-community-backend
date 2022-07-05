@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Laravel\Passport\Client;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,10 +61,11 @@ class AuthController extends Controller
         if ($request->password) {
 
             $password_length = Str::length($request->password);
+
             if ($password_length < 6) {
                 return response()->json([
                     'message' => '비밀번호는 6자리 이상 입력해 주세요.'
-                ], 500);
+                ], 422);
             }
 
             $validate = $request->validate([
@@ -73,7 +75,7 @@ class AuthController extends Controller
             $is_same = Hash::check($validate['password'], Auth::user()->password);
 
             if ($is_same) {
-                return response()->json(['message' => '이전 비밀번호는 사용할 수 없습니다.'], 500);
+                return response()->json(['message' => '이전 비밀번호는 사용할 수 없습니다.'], 422);
             }
 
             $new_password = Hash::make($validate['password']);
@@ -99,41 +101,36 @@ class AuthController extends Controller
     // 회원가입
     public function register(Request $request) {
 
-        $password_length = Str::length($request->password);
+        $valid_rules = [
+            'email' => 'unique:users',
+//            'name' => 'required|string|max:255',
+//            'password' => 'required|string|min:6',
+        ];
 
-        if ($password_length < 6) {
-            return response()->json([
-                'message' => '비밀번호는 6자리 이상 입력해 주세요.'
-            ], 500);
-        }
+        $valid_messages = array(
+//            'email.required'=> '이메일을 입력해 주세요.',
+            'email.unique'=> '중복된 아아디 입니다. 다른 아이디로 입력해 주세요.',
+//            'name.required'=> '이름을 입력해 주세요.',
+//            'password.required' => '비밀번호를 입력해 주세요.',
+//            'password.min' => '비밀번호는 6자리 이상 입력해 주세요.',
+        );
 
-        $valid = validator($request->only('email', 'name', 'password'), [
-           'email' => 'required|string|max:255|unique:users',
-           'name' => 'required|string|max:255',
-           'password' => 'required|string|min:6',
-        ]);
+        $register_validation = Validator::make($request->only( 'email'), $valid_rules, $valid_messages);
 
         // 필수 입력 값들에 대한 유효성 검사
-        if ($valid->fails()) {
+        if ($register_validation->fails()) {
             return response()->json([
-                'message' => '아이디, 이름, 비밀번호를 입력해 주세요.'
-            ], 500);
+                'message' => $register_validation->errors()
+            ], 422);
         }
 
         $data = request()->only('email', 'name', 'password', 'avatar_img');
 
         if ($request->hasFile('avatar_img')) {
             $avatar_file = $request->file('avatar_img');
-
-            if ($avatar_file->getSize() > 2097152) {
-                return response([
-                    'message' => '2MB 이하의 사진만 등록 가능합니다.'
-                 ], 500);
-            } else {
-                $file_name = time().$avatar_file->getClientOriginalName();
-                $file_path = 'user_avatar/'.$file_name;
-                Storage::disk('s3')->put($file_path, file_get_contents($avatar_file));
-            }
+            $file_name = time().$avatar_file->getClientOriginalName();
+            $file_path = 'user_avatar/'.$file_name;
+            Storage::disk('s3')->put($file_path, file_get_contents($avatar_file));
         } else {
             $file_path = null;
         }
