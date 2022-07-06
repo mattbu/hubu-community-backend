@@ -24,7 +24,7 @@ class TaskController extends Controller
                 ->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(3);
         }
 
-        return response()->json($allTasks);
+        return response()->json($allTasks, 200);
     }
 
     /**
