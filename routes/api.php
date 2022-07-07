@@ -36,6 +36,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/v1/comments/{id}/reply', [CommentController::class, 'createReply']);
     Route::delete('/v1/logout', [AuthController::class, 'logout']);
     Route::post('/v1/board/like', [LikeController::class, 'toggle_likes']);
+    Route::get('/v1/favorites', [TaskController::class, 'get_my_likes']);
 });
 
 Route::prefix('/v1/auth')->group(function() {

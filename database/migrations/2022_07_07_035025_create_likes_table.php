@@ -24,6 +24,8 @@ return new class extends Migration
             // deleted_at 만들어줌, DB에서 지우지 않고 지운 시간을 저장, eloquent로 부를 때는 제외
             $table->softDeletes();
             $table->timestamps();
+            $table->foreign('user_id')->on('users')->references('id')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreign('task_id')->on('tasks')->references('id')->cascadeOnUpdate()->cascadeOnDelete();
         });
     }
 

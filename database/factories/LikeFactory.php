@@ -18,10 +18,14 @@ class LikeFactory extends Factory
      */
     public function definition()
     {
-        return [
-            'user_id' => User::get()->random()->id,
-            'task_id' => Task::get()->random()->id,
-            'is_like' => $this->faker->boolean()
-        ];
+
+
+
+//
+//        return [
+//            'user_id' => User::get()->random()->id,
+//            'task_id' => Task::get()->random()->id,
+//            'is_like' => $this->faker->boolean()
+//        ];
     }
 }

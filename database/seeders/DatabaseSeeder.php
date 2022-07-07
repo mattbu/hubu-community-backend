@@ -18,9 +18,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+
+        $this->call([
+            LikeSeeder::class,
+        ]);
         User::factory()->count(10)->create();
-        Task::factory()->count(1)->create();
-        Like::factory()->count(10)->create();
+        Task::factory()->count(10)->create();
         Comment::factory()->count(10)->create();
     }
 }

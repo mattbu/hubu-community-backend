@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Like;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -24,7 +25,6 @@ class TaskController extends Controller
             $allTasks = Task::with('user')->with('comments')-with('likes')
                 ->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(3);
         }
-
 
         return response()->json($allTasks,200);
     }
@@ -148,5 +148,11 @@ class TaskController extends Controller
                 'message' => '삭제 권한 혹은 게시글이 없습니다.'
             ], 422);
         }
+    }
+
+    public function get_my_likes()
+    {
+        $test = User::find(Auth::id())->likes;
+        return $test;
     }
 }
