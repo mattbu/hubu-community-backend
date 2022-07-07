@@ -18,4 +18,9 @@ class Task extends Model
         return $this->hasMany(Comment::class)->whereNull('parent_id');
     }
 
+    // 게시글에 좋아요가 달림.
+    public function likes() {
+        return $this->belongsToMany(User::class, 'likes');
+    }
+
 }

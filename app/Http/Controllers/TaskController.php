@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Like;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -17,14 +18,15 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         if ($request->order_by) {
-            $allTasks = Task::with('user')->with('comments')
+            $allTasks = Task::with('user')->with('comments')->with('likes')
                 ->orderBy('created_at', $request->order_by)->orderBy('id', 'desc')->paginate(3);
         } else {
-            $allTasks = Task::with('user')->with('comments')
+            $allTasks = Task::with('user')->with('comments')-with('likes')
                 ->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(3);
         }
 
-        return response()->json($allTasks, 200);
+
+        return response()->json($allTasks,200);
     }
 
     /**
@@ -68,7 +70,12 @@ class TaskController extends Controller
     {
         //
         $task = Task::where('id', $id)->with('user', 'comments.replies')->first();
-        // dd($task->toArray());
+        $is_liked_by_me = Like::where('user_id', Auth::id())->where('task_id', $id)->first();
+
+        if ($is_liked_by_me) {
+            $task['is_liked_by_me'] = $is_liked_by_me->is_like;
+        }
+
         return response()->json($task,200,[],JSON_PRETTY_PRINT);
     }
 

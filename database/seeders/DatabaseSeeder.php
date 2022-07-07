@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Like;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Comment;
@@ -18,7 +19,8 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         User::factory()->count(10)->create();
-        Task::factory()->count(60)->create();
-//        Comment::factory()->count(10)->create();
+        Task::factory()->count(1)->create();
+        Like::factory()->count(10)->create();
+        Comment::factory()->count(10)->create();
     }
 }

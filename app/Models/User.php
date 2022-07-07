@@ -49,4 +49,10 @@ class User extends Authenticatable
     {
         return $this->where('email', $email)->first();
     }
+
+    // 유저는 좋아요를 한다.
+    public function likes()
+    {
+        return $this->belongsToMany(Task::class, 'likes', 'user_id', 'task_id');
+    }
 }

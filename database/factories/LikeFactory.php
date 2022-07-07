@@ -2,16 +2,14 @@
 
 namespace Database\Factories;
 
-use random;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Collection;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Comment>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Like>
  */
-class CommentFactory extends Factory
+class LikeFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -23,8 +21,7 @@ class CommentFactory extends Factory
         return [
             'user_id' => User::get()->random()->id,
             'task_id' => Task::get()->random()->id,
-            'depth' => 0,
-            'comment' => $this->faker->paragraph(1)
+            'is_like' => $this->faker->boolean()
         ];
     }
 }
