@@ -18,13 +18,13 @@ class TaskController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->order_by) {
-            $allTasks = Task::with('user')->with('comments')->with('likes')
-                ->orderBy('created_at', $request->order_by)->orderBy('id', 'desc')->paginate(3);
-        } else {
-            $allTasks = Task::with('user')->with('comments')-with('likes')
-                ->orderBy('created_at', 'desc')->orderBy('id', 'desc')->paginate(3);
-        }
+        $allTasks = Task::with('user')->with('comments')
+            ->orderBy('created_at', $request->order_by ?? 'desc')->orderBy('id', 'desc')->paginate(3);
+
+        $allTasks->map(function ($e) {
+            $e['likes'] = Task::find($e->id)->likes()->where('is_like', 1)->count();
+            return $e;
+        });
 
         return response()->json($allTasks,200);
     }
@@ -72,11 +72,16 @@ class TaskController extends Controller
         $task = Task::where('id', $id)->with('user', 'comments.replies')->first();
         $is_liked_by_me = Like::where('user_id', Auth::id())->where('task_id', $id)->first();
 
+        $likes = Task::find($id)->likes()->where('is_like', 1)->count();
+
         if ($is_liked_by_me) {
             $task['is_liked_by_me'] = $is_liked_by_me->is_like;
         }
 
-        return response()->json($task,200,[],JSON_PRETTY_PRINT);
+        return response()->json([
+            'data' => $task,
+            'likes' => $likes
+        ],200,[],JSON_PRETTY_PRINT);
     }
 
     /**
@@ -150,9 +155,25 @@ class TaskController extends Controller
         }
     }
 
-    public function get_my_likes()
+    public function get_my_likes(Request $request)
     {
-        $test = User::find(Auth::id())->likes;
-        return $test;
+        $liked_lists = User::find(Auth::id())->likes()->where('is_like', 1)
+            ->with('user')->with('comments')->orderBy('created_at', $request->order_by)->orderBy('id', 'desc')->paginate(3);
+
+        $liked_lists->map(function ($e) {
+            $e['likes'] = Task::find($e->id)->likes()->where('is_like', 1)->count();
+            return $e;
+        });
+
+        if (count($liked_lists) > 0) {
+            $message = '좋아요를 누른 목록 조회가 성공 하였습니다.';
+        } else {
+            $message = '조회 가능한 좋아요 목록이 없습니다.';
+        }
+
+        return response()->json([
+            'data' => $liked_lists,
+            'message' => $message
+        ], 200);
     }
 }

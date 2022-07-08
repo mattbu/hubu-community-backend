@@ -18,7 +18,7 @@ class LikeController extends Controller
                     'is_like' => true
                 ]);
                 $exist_like->restore();
-                $message = '';
+                $message = '좋아요가 등록 되었습니다.';
             } else {
                 $exist_like->update([
                     'is_like' => false
